@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.fcrepo</groupId>
+    <artifactId>fcrepo</artifactId>
+    <version>4.1.2-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>fcrepo-utils</artifactId>
+  <name>Fedora Repository Utilities</name>
+  <description>The Fedora Commons repository utilities: Provides tools for maintaining the Fedora Commons repository.</description>
+  <packaging>bundle</packaging>
+
+  <properties>
+    <project_name>fcrepo4-utils</project_name>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <project.copyrightYear>2015</project.copyrightYear>
+    <hk2.version>2.3.0</hk2.version>
+    <logback.version>1.1.2</logback.version>
+    <mockito.version>1.10.8</mockito.version>
+    <github.global.server>github</github.global.server>
+    <guava.version>18.0</guava.version>
+    <slf4j.version>1.7.7</slf4j.version>
+    <checkstyle.plugin.version>2.14</checkstyle.plugin.version>
+    <spring.version>4.1.1.RELEASE</spring.version>
+    <fcrepo.test.context.path />
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.fcrepo</groupId>
+        <artifactId>fcrepo-jcr-bom</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.fcrepo</groupId>
+      <artifactId>fcrepo-kernel</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.fcrepo</groupId>
+      <artifactId>fcrepo-kernel-impl</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.jcr</groupId>
+      <artifactId>jcr</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${guava.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+    </dependency>
+  </dependencies>
+
+</project>
