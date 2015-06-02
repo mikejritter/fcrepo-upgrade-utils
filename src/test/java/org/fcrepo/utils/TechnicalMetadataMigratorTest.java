@@ -128,7 +128,7 @@ public class TechnicalMetadataMigratorTest {
         migrator.main(new String[]{});
 
         verify(mockNode).setProperty("premis:hasMessageDigest", sha1Val);
-        verify(mockNode).setProperty("ebucore:mimeType", mimeVal);
+        verify(mockNode).setProperty("ebucore:hasMimeType", mimeVal);
         verify(mockNode).setProperty("ebucore:filename", nameVal);
     }
 
@@ -137,7 +137,7 @@ public class TechnicalMetadataMigratorTest {
         migrator.main(new String[]{"dryrun"});
 
         verify(mockNode, never()).setProperty("premis:hasMessageDigest", sha1Val);
-        verify(mockNode, never()).setProperty("ebucore:mimeType", mimeVal);
+        verify(mockNode, never()).setProperty("ebucore:hasMimeType", mimeVal);
         verify(mockNode, never()).setProperty("ebucore:filename", nameVal);
     }
 }

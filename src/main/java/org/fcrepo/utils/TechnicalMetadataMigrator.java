@@ -37,7 +37,7 @@ import org.slf4j.Logger;
  * Utility to migrate file technical metadata in existing repositories to comply
  * with changes made in May 2015:
  *   fedora:digest => premis:hasMessageDigest
- *   fedora:mimeType => ebucore:mimeType
+ *   fedora:mimeType => ebucore:hasMimeType
  *   premis:hasOriginalName => ebucore:filename
  *
  * @author escowles
@@ -95,7 +95,7 @@ public class TechnicalMetadataMigrator {
     private static void processBinary(final FedoraBinary binary) throws RepositoryException {
         logger.warn(binary.getPath());
         migrate(binary, "fedora:digest", "premis:hasMessageDigest");
-        migrate(binary, "fedora:mimeType", "ebucore:mimeType");
+        migrate(binary, "fedora:mimeType", "ebucore:hasMimeType");
         migrate(binary, "premis:hasOriginalName", "ebucore:filename");
     }
 

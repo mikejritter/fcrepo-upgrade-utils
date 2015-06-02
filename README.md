@@ -5,6 +5,6 @@ Utilities for maintaining the [Fedora Commons repository](http://github.com/fcre
 
 * TechnicalMetadataMigrator: migrate technical metadata properties based on changes made in May 2015:
     * fedora:digest => premis:hasMessageDigest
-    * fedora:mimeType => ebucore:mimeType
+    * fedora:mimeType => ebucore:hasMimeType
     * premis:hasOriginalName => ebucore:filename
 
