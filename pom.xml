@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.fcrepo</groupId>
     <artifactId>fcrepo</artifactId>
-    <version>4.1.2-SNAPSHOT</version>
+    <version>4.2.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>fcrepo-utils</artifactId>
@@ -82,5 +82,35 @@
       <version>${mockito.version}</version>
     </dependency>
   </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>${project.build.directory}/maven-shared-archive-resources</directory>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <artifactId>maven-remote-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>process-remote-resources</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>process</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <resourceBundles>
+            <resourceBundle>org.fcrepo:fcrepo-configs:${project.version}</resourceBundle>
+          </resourceBundles>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
