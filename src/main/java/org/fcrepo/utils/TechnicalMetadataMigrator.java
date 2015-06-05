@@ -33,6 +33,10 @@ import org.fcrepo.kernel.services.NodeService;
 
 import org.slf4j.Logger;
 
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+
 /**
  * Utility to migrate file technical metadata in existing repositories to comply
  * with changes made in May 2015:
@@ -49,8 +53,8 @@ public class TechnicalMetadataMigrator {
     Repository repo = (Repository)context.getBean("repository");
     */
 
-    private static final Logger logger = getLogger(TechnicalMetadataMigrator.class);
-    private static boolean dryrun = false;
+    private final Logger logger = getLogger(TechnicalMetadataMigrator.class);
+    private boolean dryrun = false;
 
     @Inject
     private static Session session;
@@ -71,17 +75,40 @@ public class TechnicalMetadataMigrator {
     **/
     public static void main(final String[] args) {
         try {
+            final boolean dryrun;
             if (args.length > 0 && "dryrun".equals(args[0])) {
                 dryrun = true;
+            } else {
+                dryrun = false;
             }
-            logger.warn("main(): dryrun={}", dryrun);
-            processResource(nodeService.find(session, "/"));
+
+            final TechnicalMetadataMigrator migrator = new TechnicalMetadataMigrator();
+            final ConfigurableApplicationContext ctx = new ClassPathXmlApplicationContext(
+                    "classpath:/spring/master.xml");
+            ctx.getBeanFactory().autowireBeanProperties(migrator, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE , false);
+            migrator.run(dryrun);
+
         } catch (RepositoryException ex) {
             ex.printStackTrace();
         }
     }
 
-    private static void processResource(final FedoraResource resource) throws RepositoryException {
+    /**
+     * No-argument constructor.
+    **/
+    public TechnicalMetadataMigrator() {
+    }
+
+    /**
+     * Migrate technical metadata properties.
+     * @param dryrun If true, do not modify repository, only show what would have been done.
+    **/
+    public void run(final boolean dryrun) throws RepositoryException {
+        this.dryrun = dryrun;
+        processResource(nodeService.find(session, "/"));
+    }
+
+    private void processResource(final FedoraResource resource) throws RepositoryException {
         logger.warn("processResource(): " + resource.getPath());
         if (resource instanceof Container) {
             for (final Iterator<FedoraResource> children = resource.getChildren(); children.hasNext(); ) {
@@ -92,14 +119,14 @@ public class TechnicalMetadataMigrator {
         }
     }
 
-    private static void processBinary(final FedoraBinary binary) throws RepositoryException {
+    private void processBinary(final FedoraBinary binary) throws RepositoryException {
         logger.warn(binary.getPath());
         migrate(binary, "fedora:digest", "premis:hasMessageDigest");
         migrate(binary, "fedora:mimeType", "ebucore:hasMimeType");
         migrate(binary, "premis:hasOriginalName", "ebucore:filename");
     }
 
-    private static void migrate(final FedoraBinary binary, final String fromProp, final String toProp)
+    private void migrate(final FedoraBinary binary, final String fromProp, final String toProp)
             throws RepositoryException {
         final Property p = binary.getProperty(fromProp);
         logger.warn("  {} => {}: {}", fromProp, toProp, p.getString());

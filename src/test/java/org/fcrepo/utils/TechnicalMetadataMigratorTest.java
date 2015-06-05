@@ -125,7 +125,7 @@ public class TechnicalMetadataMigratorTest {
 
     @Test
     public void testMigrator() throws RepositoryException {
-        migrator.main(new String[]{});
+        migrator.run(false);
 
         verify(mockNode).setProperty("premis:hasMessageDigest", sha1Val);
         verify(mockNode).setProperty("ebucore:hasMimeType", mimeVal);
@@ -134,7 +134,7 @@ public class TechnicalMetadataMigratorTest {
 
     @Test
     public void testMigratorDryRun() throws RepositoryException {
-        migrator.main(new String[]{"dryrun"});
+        migrator.run(true);
 
         verify(mockNode, never()).setProperty("premis:hasMessageDigest", sha1Val);
         verify(mockNode, never()).setProperty("ebucore:hasMimeType", mimeVal);
