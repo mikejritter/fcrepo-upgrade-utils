@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.fcrepo.utils;
+package org.fcrepo.upgrade.utils;
 
 import static org.slf4j.LoggerFactory.getLogger;
 

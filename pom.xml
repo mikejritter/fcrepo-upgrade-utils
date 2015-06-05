@@ -9,13 +9,13 @@
     <version>4.2.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>fcrepo-utils</artifactId>
+  <artifactId>fcrepo-upgrade-utils</artifactId>
   <name>Fedora Repository Utilities</name>
-  <description>The Fedora Commons repository utilities: Provides tools for maintaining the Fedora Commons repository.</description>
+  <description>The Fedora Commons repository upgrade utilities: Provides tools for maintaining the Fedora Commons repository.</description>
   <packaging>bundle</packaging>
 
   <properties>
-    <project_name>fcrepo4-utils</project_name>
+    <project_name>fcrepo4-upgrade-utils</project_name>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <project.copyrightYear>2015</project.copyrightYear>
@@ -119,7 +119,7 @@
           </descriptors>
           <archive>
             <manifest>
-              <mainClass>org.fcrepo.utils.TechnicalMetadataMigrator</mainClass>
+              <mainClass>org.fcrepo.upgrade.utils.TechnicalMetadataMigrator</mainClass>
             </manifest>
           </archive>
         </configuration>
