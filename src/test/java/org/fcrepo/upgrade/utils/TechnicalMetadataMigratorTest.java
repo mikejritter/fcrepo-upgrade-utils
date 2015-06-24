@@ -30,6 +30,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
 
+import org.fcrepo.http.commons.session.SessionFactory;
 import org.fcrepo.kernel.services.NodeService;
 import org.fcrepo.kernel.models.Container;
 import org.fcrepo.kernel.models.FedoraBinary;
@@ -47,7 +48,7 @@ import org.mockito.Mock;
 public class TechnicalMetadataMigratorTest {
 
     @Mock
-    Session mockSession;
+    SessionFactory mockSessionFactory;
 
     @Mock
     NodeService mockService;
@@ -120,7 +121,7 @@ public class TechnicalMetadataMigratorTest {
         when(mockBinary.getProperty(eq("fedora:mimeType"))).thenReturn(mimeProp);
         when(mockBinary.getProperty(eq("premis:hasOriginalName"))).thenReturn(nameProp);
 
-        migrator = new TechnicalMetadataMigrator(mockSession, mockService);
+        migrator = new TechnicalMetadataMigrator(mockSessionFactory, mockService);
     }
 
     @Test

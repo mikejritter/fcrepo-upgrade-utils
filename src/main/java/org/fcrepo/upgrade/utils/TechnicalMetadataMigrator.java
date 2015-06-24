@@ -26,6 +26,7 @@ import javax.jcr.Session;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import org.fcrepo.http.commons.session.SessionFactory;
 import org.fcrepo.kernel.models.Container;
 import org.fcrepo.kernel.models.FedoraBinary;
 import org.fcrepo.kernel.models.FedoraResource;
@@ -57,14 +58,14 @@ public class TechnicalMetadataMigrator {
     private boolean dryrun = false;
 
     @Inject
-    private static Session session;
+    private SessionFactory sessionFactory;
 
     @Inject
-    private static NodeService nodeService;
+    private NodeService nodeService;
 
     @VisibleForTesting
-    protected TechnicalMetadataMigrator(final Session session, final NodeService nodeService) {
-        this.session = session;
+    protected TechnicalMetadataMigrator(final SessionFactory sessionFactory, final NodeService nodeService) {
+        this.sessionFactory = sessionFactory;
         this.nodeService = nodeService;
     }
 
@@ -74,6 +75,7 @@ public class TechnicalMetadataMigrator {
      *             but no changes will be made.
     **/
     public static void main(final String[] args) {
+        ConfigurableApplicationContext ctx = null;
         try {
             final boolean dryrun;
             if (args.length > 0 && "dryrun".equals(args[0])) {
@@ -83,13 +85,16 @@ public class TechnicalMetadataMigrator {
             }
 
             final TechnicalMetadataMigrator migrator = new TechnicalMetadataMigrator();
-            final ConfigurableApplicationContext ctx = new ClassPathXmlApplicationContext(
-                    "classpath:/spring/master.xml");
-            ctx.getBeanFactory().autowireBeanProperties(migrator, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE , false);
+            ctx = new ClassPathXmlApplicationContext("classpath:/spring/master.xml");
+            ctx.getBeanFactory().autowireBeanProperties(migrator, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE, false);
             migrator.run(dryrun);
 
         } catch (RepositoryException ex) {
             ex.printStackTrace();
+        } finally {
+            if (null != ctx) {
+                ctx.close();
+            }
         }
     }
 
@@ -105,17 +110,25 @@ public class TechnicalMetadataMigrator {
     **/
     public void run(final boolean dryrun) throws RepositoryException {
         this.dryrun = dryrun;
+        final Session session = sessionFactory.getInternalSession();
         processResource(nodeService.find(session, "/"));
     }
 
     private void processResource(final FedoraResource resource) throws RepositoryException {
-        logger.warn("processResource(): " + resource.getPath());
+        logger.info("processResource() {}: " + resource.getPath(), resource.getClass());
         if (resource instanceof Container) {
+            logger.info("Found container: {}", resource);
             for (final Iterator<FedoraResource> children = resource.getChildren(); children.hasNext(); ) {
                 processResource(children.next());
             }
         } else if (resource instanceof FedoraBinary) {
+            logger.info("Found binary: {}", resource);
             processBinary((FedoraBinary)resource);
+        } else {
+            logger.info("Neither container nor binary!");
+            for (final Iterator<FedoraResource> children = resource.getChildren(); children.hasNext(); ) {
+                processResource(children.next());
+            }
         }
     }
 
@@ -128,6 +141,7 @@ public class TechnicalMetadataMigrator {
 
     private void migrate(final FedoraBinary binary, final String fromProp, final String toProp)
             throws RepositoryException {
+        logger.info("Processing: {}", binary);
         final Property p = binary.getProperty(fromProp);
         logger.warn("  {} => {}: {}", fromProp, toProp, p.getString());
         if (!dryrun) {
