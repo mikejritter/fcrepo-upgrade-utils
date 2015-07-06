@@ -9,10 +9,16 @@
 
     <context:annotation-config/>
 
-    <bean name="modeshapeRepofactory"
-        class="org.fcrepo.kernel.impl.spring.ModeShapeRepositoryFactoryBean"
-        p:repositoryConfiguration="${fcrepo.modeshape.configuration:classpath:/config/minimal-default/repository.json}"/>
+  <bean name="modeshapeRepofactory"
+          class="org.fcrepo.kernel.impl.spring.ModeShapeRepositoryFactoryBean"
+          p:repositoryConfiguration="${fcrepo.modeshape.configuration:classpath:/config/minimal-default/repository.json}"/>
 
-    <bean class="org.modeshape.jcr.ModeShapeEngine" init-method="start"/>
+  <bean class="org.modeshape.jcr.ModeShapeEngine" init-method="start"/>
+
+  <context:component-scan base-package="org.fcrepo"/>
+
+  <bean class="org.fcrepo.http.commons.session.SessionFactory"/>
+
+  <bean id="connectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager" />
 
 </beans>
