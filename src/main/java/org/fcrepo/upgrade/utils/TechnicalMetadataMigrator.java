@@ -27,6 +27,7 @@ import javax.jcr.Session;
 import com.google.common.annotations.VisibleForTesting;
 
 import org.fcrepo.http.commons.session.SessionFactory;
+import org.fcrepo.kernel.exception.RepositoryRuntimeException;
 import org.fcrepo.kernel.models.Container;
 import org.fcrepo.kernel.models.FedoraBinary;
 import org.fcrepo.kernel.models.FedoraResource;
@@ -42,17 +43,13 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
  * Utility to migrate file technical metadata in existing repositories to comply
  * with changes made in May 2015:
  *   fedora:digest => premis:hasMessageDigest
- *   fedora:mimeType => ebucore:hasMimeType
+ *   jcr:mimeType => ebucore:hasMimeType
  *   premis:hasOriginalName => ebucore:filename
  *
  * @author escowles
  * @since 2015-05-21
 **/
 public class TechnicalMetadataMigrator {
-    /*
-    ApplicationContext context = new ClasspathXmlApplication("context.xml");
-    Repository repo = (Repository)context.getBean("repository");
-    */
 
     private final Logger logger = getLogger(TechnicalMetadataMigrator.class);
     private boolean dryrun = false;
@@ -111,7 +108,17 @@ public class TechnicalMetadataMigrator {
     public void run(final boolean dryrun) throws RepositoryException {
         this.dryrun = dryrun;
         final Session session = sessionFactory.getInternalSession();
+
+        // register ebucore namespace
+        if (!dryrun) {
+            session.setNamespacePrefix("ebucore", "http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#");
+        }
+
         processResource(nodeService.find(session, "/"));
+
+        if (!dryrun) {
+            session.save();
+        }
     }
 
     private void processResource(final FedoraResource resource) throws RepositoryException {
@@ -133,20 +140,20 @@ public class TechnicalMetadataMigrator {
     }
 
     private void processBinary(final FedoraBinary binary) throws RepositoryException {
-        logger.warn(binary.getPath());
         migrate(binary, "fedora:digest", "premis:hasMessageDigest");
-        migrate(binary, "fedora:mimeType", "ebucore:hasMimeType");
+        migrate(binary, "jcr:mimeType", "ebucore:hasMimeType");
         migrate(binary, "premis:hasOriginalName", "ebucore:filename");
     }
 
     private void migrate(final FedoraBinary binary, final String fromProp, final String toProp)
             throws RepositoryException {
-        logger.info("Processing: {}", binary);
-        final Property p = binary.getProperty(fromProp);
-        logger.warn("  {} => {}: {}", fromProp, toProp, p.getString());
-        if (!dryrun) {
-            binary.getNode().setProperty(toProp, p.getValue());
-            p.remove();
+        if (binary.hasProperty(fromProp)) {
+            final Property p = binary.getProperty(fromProp);
+            logger.info("  {} => {}: {}", fromProp, toProp, p.getString());
+            if (!dryrun) {
+                binary.getNode().setProperty(toProp, p.getValue());
+                p.remove();
+            }
         }
     }
 }

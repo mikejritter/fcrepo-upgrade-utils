@@ -51,6 +51,9 @@ public class TechnicalMetadataMigratorTest {
     SessionFactory mockSessionFactory;
 
     @Mock
+    Session mockSession;
+
+    @Mock
     NodeService mockService;
 
     @Mock
@@ -117,9 +120,14 @@ public class TechnicalMetadataMigratorTest {
         when(mimeProp.getValue()).thenReturn(mimeVal);
         when(nameProp.getValue()).thenReturn(nameVal);
 
+        when(mockBinary.hasProperty(eq("fedora:digest"))).thenReturn(true);
+        when(mockBinary.hasProperty(eq("jcr:mimeType"))).thenReturn(true);
+        when(mockBinary.hasProperty(eq("premis:hasOriginalName"))).thenReturn(true);
         when(mockBinary.getProperty(eq("fedora:digest"))).thenReturn(sha1Prop);
-        when(mockBinary.getProperty(eq("fedora:mimeType"))).thenReturn(mimeProp);
+        when(mockBinary.getProperty(eq("jcr:mimeType"))).thenReturn(mimeProp);
         when(mockBinary.getProperty(eq("premis:hasOriginalName"))).thenReturn(nameProp);
+
+        when(mockSessionFactory.getInternalSession()).thenReturn(mockSession);
 
         migrator = new TechnicalMetadataMigrator(mockSessionFactory, mockService);
     }
@@ -131,6 +139,7 @@ public class TechnicalMetadataMigratorTest {
         verify(mockNode).setProperty("premis:hasMessageDigest", sha1Val);
         verify(mockNode).setProperty("ebucore:hasMimeType", mimeVal);
         verify(mockNode).setProperty("ebucore:filename", nameVal);
+        verify(mockSession).save();
     }
 
     @Test
@@ -140,5 +149,6 @@ public class TechnicalMetadataMigratorTest {
         verify(mockNode, never()).setProperty("premis:hasMessageDigest", sha1Val);
         verify(mockNode, never()).setProperty("ebucore:hasMimeType", mimeVal);
         verify(mockNode, never()).setProperty("ebucore:filename", nameVal);
+        verify(mockSession, never()).save();
     }
 }
