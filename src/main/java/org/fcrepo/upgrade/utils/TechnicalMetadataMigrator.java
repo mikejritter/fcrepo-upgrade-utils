@@ -53,6 +53,7 @@ public class TechnicalMetadataMigrator {
 
     private final Logger logger = getLogger(TechnicalMetadataMigrator.class);
     private boolean dryrun = false;
+    private Session session;
 
     @Inject
     private SessionFactory sessionFactory;
@@ -107,7 +108,7 @@ public class TechnicalMetadataMigrator {
     **/
     public void run(final boolean dryrun) throws RepositoryException {
         this.dryrun = dryrun;
-        final Session session = sessionFactory.getInternalSession();
+        session = sessionFactory.getInternalSession();
 
         // register ebucore namespace
         if (!dryrun) {
@@ -115,24 +116,20 @@ public class TechnicalMetadataMigrator {
         }
 
         processResource(nodeService.find(session, "/"));
-
-        if (!dryrun) {
-            session.save();
-        }
     }
 
     private void processResource(final FedoraResource resource) throws RepositoryException {
-        logger.info("processResource() {}: " + resource.getPath(), resource.getClass());
+        logger.debug("processResource() {}: " + resource.getPath(), resource.getClass());
         if (resource instanceof Container) {
-            logger.info("Found container: {}", resource);
+            logger.debug("Found container: {}", resource);
             for (final Iterator<FedoraResource> children = resource.getChildren(); children.hasNext(); ) {
                 processResource(children.next());
             }
         } else if (resource instanceof FedoraBinary) {
-            logger.info("Found binary: {}", resource);
+            logger.debug("Found binary: {}", resource);
             processBinary((FedoraBinary)resource);
         } else {
-            logger.info("Neither container nor binary!");
+            logger.debug("Neither container nor binary!");
             for (final Iterator<FedoraResource> children = resource.getChildren(); children.hasNext(); ) {
                 processResource(children.next());
             }
@@ -143,13 +140,21 @@ public class TechnicalMetadataMigrator {
         migrate(binary, "fedora:digest", "premis:hasMessageDigest");
         migrate(binary, "jcr:mimeType", "ebucore:hasMimeType");
         migrate(binary, "premis:hasOriginalName", "ebucore:filename");
+
+        if (!dryrun) {
+            logger.info(binary.getPath());
+            session.save();
+        } else {
+            logger.info("dryrun {}", binary.getPath());
+            session.refresh(false);
+        }
     }
 
     private void migrate(final FedoraBinary binary, final String fromProp, final String toProp)
             throws RepositoryException {
         if (binary.hasProperty(fromProp)) {
             final Property p = binary.getProperty(fromProp);
-            logger.info("  {} => {}: {}", fromProp, toProp, p.getString());
+            logger.debug("  {} => {}: {}", fromProp, toProp, p.getString());
             if (!dryrun) {
                 binary.getNode().setProperty(toProp, p.getValue());
                 p.remove();
