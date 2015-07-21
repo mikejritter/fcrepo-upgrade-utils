@@ -43,7 +43,7 @@ import org.mockito.Mock;
 /**
  * TechnicalMetadataMigrator test
  * @author escowles
- * @sinced 2015-05-21
+ * @since 2015-05-21
 **/
 public class TechnicalMetadataMigratorTest {
 

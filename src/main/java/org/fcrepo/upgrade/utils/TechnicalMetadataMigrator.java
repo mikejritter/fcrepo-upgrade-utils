@@ -41,9 +41,9 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 /**
  * Utility to migrate file technical metadata in existing repositories to comply
  * with changes made in May 2015:
- *   fedora:digest => premis:hasMessageDigest
- *   jcr:mimeType => ebucore:hasMimeType
- *   premis:hasOriginalName => ebucore:filename
+ *   fedora:digest to premis:hasMessageDigest
+ *   jcr:mimeType to ebucore:hasMimeType
+ *   premis:hasOriginalName to ebucore:filename
  *
  * @author escowles
  * @since 2015-05-21
