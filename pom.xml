@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.fcrepo</groupId>
     <artifactId>fcrepo</artifactId>
-    <version>4.2.1-SNAPSHOT</version>
+    <version>4.3.0</version>
   </parent>
 
   <artifactId>fcrepo-upgrade-utils</artifactId>
@@ -46,17 +46,17 @@
     <dependency>
       <groupId>org.fcrepo</groupId>
       <artifactId>fcrepo-kernel-api</artifactId>
-      <version>${project.version}</version>
+      <version>4.3.0</version>
     </dependency>
     <dependency>
       <groupId>org.fcrepo</groupId>
       <artifactId>fcrepo-kernel-modeshape</artifactId>
-      <version>${project.version}</version>
+      <version>4.3.0</version>
     </dependency>
     <dependency>
       <groupId>org.fcrepo</groupId>
       <artifactId>fcrepo-auth-common</artifactId>
-      <version>${project.version}</version>
+      <version>4.3.0</version>
     </dependency>
     <dependency>
       <groupId>javax.jcr</groupId>
@@ -150,7 +150,7 @@
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/spring.schemas</resource>
                 </transformer>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
               </transformers>
             </configuration>
           </execution>
@@ -159,4 +159,8 @@
     </plugins>
   </build>
 
+
+  <scm>
+    <tag>fcrepo-upgrade-utils-4.3.0</tag>
+  </scm>
 </project>
