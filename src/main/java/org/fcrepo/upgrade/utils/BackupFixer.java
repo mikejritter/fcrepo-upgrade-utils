@@ -30,6 +30,9 @@ import java.util.HashSet;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import org.slf4j.Logger;
+
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * This utility is designed to be used to help migrate from 4.4, 4.5, and 4.6 to Fedora 4.7.0
@@ -43,6 +46,10 @@ import com.fasterxml.jackson.core.JsonToken;
  * @since 2016-10-28
  */
 public class BackupFixer {
+
+    private static final Logger LOGGER = getLogger(BackupFixer.class);
+
+    final static HashSet<String> IDS = new HashSet<>();
 
     /**
      * Private constructor
@@ -58,57 +65,53 @@ public class BackupFixer {
      */
     public static void main( final String[] args ) throws IOException {
         if ( args.length < 1 ) {
-            System.err.println("usage: BackupFixer [backup directory]");
+            LOGGER.error("usage: BackupFixer [backup directory]");
             return;
         }
 
         final File dir = new File(args[0]);
 
         if ( !dir.exists() || dir.listFiles().length == 0 ) {
-            System.err.println("Directory " + args[0] + " is empty or doesn't exist");
+            LOGGER.error("Directory {} is empty or doesn't exist", args[0]);
             return;
         }
 
         final File[] files = dir.listFiles();
-        for ( int i = 0; i < files.length; i++ ) {
-            final String fn = files[i].getName();
-            if ( files[i].isFile() && fn.startsWith("documents_") && fn.endsWith(".gz") ) {
-                fix(files[i]);
+        for ( File file : files ) {
+            final String fn = file.getName();
+            if ( file.isFile() && fn.startsWith("documents_") && fn.endsWith(".gz") ) {
+                fix(file);
             }
         }
     }
     private static void fix(final File f) throws IOException {
-        System.out.println("Fixing: " + f.getName());
+        LOGGER.info("Fixing: {}", f.getName());
 
         // move original file
         final File moved = new File(f.getParent(), f.getName() + ".orig");
         if ( moved.exists() ) {
-            System.err.println("Backup file already exists, skipping: " + moved.getName());
+            LOGGER.error("Backup file already exists, skipping: {}", moved.getName());
             return;
         }
         f.renameTo(moved);
 
-        // filter duplicate ids
-        PrintWriter out = null;
-        try {
-            final BufferedReader buf = new BufferedReader(new InputStreamReader(new GZIPInputStream(
-                    new FileInputStream(moved))));
-            out = new PrintWriter(new GZIPOutputStream(new FileOutputStream(f)));
+        // filter duplicate IDS
+        try (final BufferedReader buf = new BufferedReader(new InputStreamReader(new GZIPInputStream(
+                new FileInputStream(moved))));) {
 
-            final HashSet<String> ids = new HashSet<>();
-            for ( String line = null; (line = buf.readLine()) != null; ) {
+            final PrintWriter out = new PrintWriter(new GZIPOutputStream(new FileOutputStream(f)));
+
+            for (String line; (line = buf.readLine()) != null; ) {
                 final String id = idFromJSON(line);
-                if ( id == null ) {
-                    System.err.println("Unable to parse id: " + line);
-                } else if ( ids.contains(id) ) {
-                    System.err.println("Skipping duplicate id: " + line);
+                if (id == null) {
+                    LOGGER.error("Unable to parse id: {}", line);
+                } else if (IDS.contains(id)) {
+                    LOGGER.info("Skipping duplicate id: {}", line);
                 } else {
-                    ids.add(id);
+                    IDS.add(id);
                     out.println(line);
                 }
             }
-        } finally {
-            out.close();
         }
     }
     private static String idFromJSON(final String s) {
@@ -124,7 +127,7 @@ public class BackupFixer {
                 }
             }
         } catch ( IOException ex ) {
-            System.err.println("Exception during parsing: " + ex.toString());
+            LOGGER.error("Exception during parsing: {}", ex.getMessage());
         }
         return null;
     }
