@@ -1,12 +1,15 @@
-Fedora 4 Utilities
-==================
+Fedora 4 Upgrade Utilities
+==========================
 
-Utilities for maintaining the [Fedora Commons repository](http://github.com/fcrepo4/fcrepo4).
+Utilities for version upgrades of the [Fedora Commons repository](http://github.com/fcrepo4/fcrepo4).
 
-* TechnicalMetadataMigrator: migrate technical metadata properties based on changes made in May 2015:
-    * fedora:digest => premis:hasMessageDigest
-    * fedora:mimeType => ebucore:hasMimeType
-    * premis:hasOriginalName => ebucore:filename
+Upgrading from 4.3, 4.5, 4.6 to Fedora 4.7
+
+* BackupFixer:
+    * Fedora 4.7.0 transitions to a new backend store, and therefore requires a data upgrade.
+    * It should be run on the directory produced by a /fcr:backup request, prior to requesting /fcr:restore
+    * For details on executing /fcr:backup and /fcr:restore, see [documentation](https://wiki.duraspace.org/display/FEDORA47/RESTful+HTTP+API+-+Backup+and+Restore)
+    * Warning: This utility is destructive (but likely not in a bad way), and should be run against a copy of the backup if the backup is irreplaceable.
 
 Building
 --------
@@ -20,14 +23,29 @@ mvn package
 Running
 -------
 
-Before running the migration utility, stop the repository by shutting down the servlet container (Tomcat, Jetty, etc.) or removing the Fedora 4 webapp.  Then run the migration utility by executing the JAR file and provide the `fcrepo.home` system property to set the location of Fedora 4's `fcrepo4-data` directory.
+1. Backup your repository
+    * ```sh
+        curl -X POST $HOST:$PORT/$CONTEXT/rest/fcr:backup
+        ```
 
-``` sh
-java -Dfcrepo.home=/path/to/fcrepo4-data -jar /path/to/fcrepo4-upgrade-utils/target/fcrepo-upgrade-utils-4.3.1-SNAPSHOT.jar
-```
+2. Restore your repository
+    * ```sh
+        curl -X POST --data-binary "/tmp/fcrepo4-data/path/to/backup/directory" $HOST:$PORT/$CONTEXT/rest/fcr:restore
+        ```
 
-To run the migration utility in "dry-run" mode where it will output a summary of the migration it would perform, but not actually change the repository: 
+    * Optional step "2b": If the restore operation results in errors similar to those documented in this [ticket](https://jira.duraspace.org/browse/FCREPO-2069),
+then run the utility documented below:
 
-``` sh
-java -Dfcrepo.home=/path/to/fcrepo4-data -jar /path/to/fcrepo4-upgrade-utils/target/fcrepo-upgrade-utils-4.3.1-SNAPSHOT.jar dryrun
-```
+        ``` sh
+        java -jar /path/to/fcrepo4-upgrade-utils/target/fcrepo-upgrade-utils-4.8.0-SNAPSHOT.jar /path/to/backup/directory
+        ```
+
+        If you ran this optional step, then retry step "2".
+
+
+Earlier Version Upgrades
+------------------------
+
+Upgrading from 4.2 to Fedora 4.3
+
+* See [documentation](https://github.com/fcrepo4-exts/fcrepo4-upgrade-utils/tree/4.2-4.3)
