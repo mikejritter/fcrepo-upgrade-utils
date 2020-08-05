@@ -31,35 +31,40 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
- * Tests the {@link org.fcrepo.upgrade.utils.UpgradeUtil}
+ * Tests the {@link F47ToF5UpgradeManagerTest}
  *
  * @author dbernstein
  */
 
-public class UpgradeUtilTest {
-
+public class F47ToF5UpgradeManagerTest {
 
     static final String TARGET_DIR = System.getProperty("project.build.directory");
 
-    @Test
-    public void test475to5xUpgrade() throws Exception {
-
-
-        //prepare
-
+    private File createTempDir() {
         final File tmpDir = new File(System.getProperty("java.io.tmpdir"), System.currentTimeMillis() + "");
         tmpDir.mkdirs();
+        return tmpDir;
+    }
+
+    @Test
+    public void testUpgrade() throws Exception {
+        //prepare
+        final File tmpDir = createTempDir();
         final File input = new File(TARGET_DIR + "/test-classes/4.7.5-export");
         final File output = new File(tmpDir, "output");
         output.mkdir();
 
+        final var config = new Config();
+        config.setSourceVersion(FedoraVersion.V_4_7_5);
+        config.setTargetVersion(FedoraVersion.V_5);
+        config.setInputDir(input);
+        config.setOutputDir(output);
         //run
-        new UpgradeUtil(input, output).run();
-
+        UpgradeManager upgradeManager = UpgradeManagerFactory.create(config);
+        upgradeManager.start();
         //ensure all expected files exist
         final String[] expectedFiles = new String[]{"rest.ttl",
                 "rest.ttl.headers",
@@ -104,4 +109,5 @@ public class UpgradeUtilTest {
     private File getFile(final File output, final String subpath) {
         return new File(output.getAbsolutePath() + "/" + subpath);
     }
+
 }

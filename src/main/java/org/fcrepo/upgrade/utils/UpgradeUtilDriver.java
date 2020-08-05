@@ -17,16 +17,16 @@
  */
 package org.fcrepo.upgrade.utils;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -36,6 +36,13 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class UpgradeUtilDriver {
 
     private static final org.slf4j.Logger logger = getLogger(UpgradeUtilDriver.class);
+
+    public static final Map<FedoraVersion, Set<FedoraVersion>> VALID_MIGRATION_PATHS = new HashMap<>();
+
+    static {
+        VALID_MIGRATION_PATHS.put(FedoraVersion.V_4_7_5, Set.of(FedoraVersion.V_5));
+        VALID_MIGRATION_PATHS.put(FedoraVersion.V_5, Set.of(FedoraVersion.V_6));
+    }
 
     private UpgradeUtilDriver() {
         // Prevent public instantiation
@@ -73,7 +80,24 @@ public class UpgradeUtilDriver {
         configOptions.addOption(Option.builder("i")
                 .longOpt("input-dir")
                 .hasArg(true)
-                .desc("The path to the directory containing a 4.7.x export")
+                .desc("The path to the directory containing a Fedora 4.7.x or Fedora 5.x export")
+                .required(true)
+                .build());
+
+        configOptions.addOption(Option.builder("s")
+                .longOpt("source-version")
+                .hasArg(true)
+                .desc(format("The version of Fedora that was the source of the export. Valid values: %s",
+                        join(VALID_MIGRATION_PATHS.keySet())))
+                .required(true)
+                .build());
+
+        configOptions.addOption(Option.builder("t")
+                .longOpt("target-version")
+                .hasArg(true)
+                .desc(format("The version of Fedora to which you are upgrading. Valid values: %s",
+                        join(VALID_MIGRATION_PATHS.values().stream()
+                                .flatMap(x -> x.stream()).collect(Collectors.toSet()))))
                 .required(true)
                 .build());
 
@@ -90,7 +114,7 @@ public class UpgradeUtilDriver {
         final File inputDir = new File(cmd.getOptionValue("i"));
 
         if (!inputDir.exists()) {
-            printHelpAndExit("input directory " + inputDir.getAbsolutePath() + " does not exist.", configOptions);
+            printHelpAndExit(format("input directory %s does not exist.", inputDir.getAbsolutePath()), configOptions);
         }
 
         final String outputDirStr = cmd.getOptionValue("o");
@@ -103,19 +127,30 @@ public class UpgradeUtilDriver {
         } else {
             outputDir = new File(outputDirStr);
             if (!outputDir.exists()) {
-                printHelpAndExit("output directory " + outputDir.getAbsolutePath() + " does not exist.", configOptions);
+                printHelpAndExit(format("output directory %s does not exist.", outputDir.getAbsolutePath()),
+                        configOptions);
             }
         }
 
-
         try {
-            //run driver
-            new UpgradeUtil(inputDir, outputDir).run();
+            final var config = new Config();
+            config.setSourceVersion(FedoraVersion.fromString(cmd.getOptionValue("s")));
+            config.setTargetVersion(FedoraVersion.fromString(cmd.getOptionValue("t")));
+            config.setInputDir(inputDir);
+            config.setOutputDir(outputDir);
+            //start the upgrade
+            final var manager = UpgradeManagerFactory.create(config);
+            manager.start();
         } catch (final Exception e) {
             logger.error("Upgrade failed.", e);
-            printHelpAndExit("Upgrade failed due to " + e.getMessage() + ".  See log for details.", configOptions);
+            printHelpAndExit(format("Upgrade failed: %s  -> See log for details.", e.getMessage()), configOptions);
         }
     }
+
+    private Object join(Collection<FedoraVersion> versions) {
+        return String.join(", ", versions.stream().map(x -> x.getStringValue()).collect(Collectors.toList()));
+    }
+
 
     private static void printHelpAndExit(final String errorMessage, final Options options) {
         final HelpFormatter formatter = new HelpFormatter();

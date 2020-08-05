@@ -4,12 +4,12 @@
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.fcrepo</groupId>
-  <version>5.0.0-SNAPSHOT</version>
+  <version>6.0.0-SNAPSHOT</version>
 
   <parent>
     <groupId>org.fcrepo</groupId>
     <artifactId>fcrepo-parent</artifactId>
-    <version>5.1.0</version>
+    <version>6.0.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>fcrepo-upgrade-utils</artifactId>
@@ -49,12 +49,23 @@
     <junit.version>4.11</junit.version>
     <cargo.version>1.4.12</cargo.version>
     <fcrepo-java-client.version>0.4.0</fcrepo-java-client.version>
+    <commons-lang.version>3.11</commons-lang.version>
+    <commons-collections.version>4.4</commons-collections.version>
 
   </properties>
 
 
   <dependencies>
-
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons-lang.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>${commons-collections.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -158,11 +169,11 @@
       </plugin>
 
 
-      <plugin>
+      <!--plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>${checkstyle.plugin.version}</version>
-      </plugin>
+	<version>${checkstyle.plugin.version}</version>
+      </plugin-->
 
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>

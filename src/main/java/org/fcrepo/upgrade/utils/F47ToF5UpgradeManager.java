@@ -25,11 +25,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.fcrepo.client.FcrepoLink;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,35 +44,29 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @author dbernstein
  * @since 2019-08-05
  */
-class UpgradeUtil {
+class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager {
 
-    private static final org.slf4j.Logger logger = getLogger(UpgradeUtilDriver.class);
+    private static final org.slf4j.Logger logger = getLogger(F47ToF5UpgradeManager.class);
 
-    private File inputDir;
-    private File outputDir;
 
     /**
      * Constructor
      *
-     * @param inputDir  input directory
-     * @param outputDir output directory
+     * @param config the upgrade configuration
      */
-    UpgradeUtil(final File inputDir, final File outputDir) {
-        this.inputDir = inputDir;
-        this.outputDir = outputDir;
+    F47ToF5UpgradeManager(final Config config) {
+        super(config);
     }
 
-    /**
-     * Runs the upgrade util process
-     */
-    void run() {
+    @Override
+    public void start() {
         //walk the directory structure
-        processDirectory(this.inputDir);
+        processDirectory(this.config.getInputDir());
     }
 
     private void processDirectory(final File dir) {
         logger.info("Processing directory: {}", dir.getAbsolutePath());
-        try (final Stream<Path> walk = Files.walk(Paths.get(this.inputDir.toURI()))) {
+        try (final Stream<Path> walk = Files.walk(Paths.get(this.config.getInputDir().toURI()))) {
             //process files
             final List<String> files = walk.filter(path -> Files.isRegularFile(path))
                     .map(x -> x.toString()).collect(Collectors.toList());
@@ -89,10 +79,10 @@ class UpgradeUtil {
     }
 
     private void processFile(final File file) {
-        final String inputPath = this.inputDir.getAbsolutePath();
+        final String inputPath = this.config.getInputDir().getAbsolutePath();
         final String absolutePath = file.getAbsolutePath();
         final String relativePath = absolutePath.substring(inputPath.length());
-        final File newLocation = new File(this.outputDir.getAbsolutePath() + relativePath);
+        final File newLocation = new File(this.config.getOutputDir().getAbsolutePath() + relativePath);
         newLocation.getParentFile().mkdirs();
         logger.debug("copy file {} to {}", file.getAbsolutePath(), newLocation.getAbsoluteFile());
         try {
@@ -110,9 +100,9 @@ class UpgradeUtil {
                 final AtomicBoolean isExternal = new AtomicBoolean(false);
 
                 model.listStatements().forEachRemaining(statement -> {
-                    if (statement.getPredicate().getURI().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) {
+                    if (statement.getPredicate().getURI().equals(RdfConstants.RDF_TYPE)) {
                         final String objectURI = statement.getObject().asResource().getURI();
-                        if (objectURI.equals("http://www.w3.org/ns/ldp#NonRDFSource")) {
+                        if (objectURI.equals(RdfConstants.LDP_NON_RDFSOURCE)) {
                             isBinary.set(true);
                         }
 
@@ -126,7 +116,7 @@ class UpgradeUtil {
 
                     }
 
-                    if (statement.getPredicate().getURI().equals("http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#hasMimeType")) {
+                    if (statement.getPredicate().getURI().equals(RdfConstants.EBUCORE_HAS_MIME_TYPE)) {
                         final String value = statement.getObject().toString();
                         final String valueAsLiteral = statement.getObject().asLiteral().getString();
 
