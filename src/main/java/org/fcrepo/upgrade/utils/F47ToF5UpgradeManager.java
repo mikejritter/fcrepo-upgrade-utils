@@ -17,19 +17,16 @@
  */
 package org.fcrepo.upgrade.utils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.IOUtils;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RDFDataMgr;
-import org.fcrepo.client.FcrepoLink;
+import static org.slf4j.LoggerFactory.getLogger;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +35,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.slf4j.LoggerFactory.getLogger;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
+import org.fcrepo.client.FcrepoLink;
 
 /**
  * @author dbernstein
@@ -66,31 +70,27 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
 
     private void processDirectory(final File dir) {
         logger.info("Processing directory: {}", dir.getAbsolutePath());
-        try (final Stream<Path> walk = Files.walk(Paths.get(this.config.getInputDir().toURI()))) {
-            //process files
-            final List<String> files = walk.filter(path -> Files.isRegularFile(path))
-                    .map(x -> x.toString()).collect(Collectors.toList());
-            files.forEach(file -> {
-                processFile(new File(file));
-            });
+        try (final Stream<Path> walk = Files.walk(dir.toPath())) {
+            for (Path path : walk.filter(path -> Files.isRegularFile(path)).collect(Collectors.toList())) {
+                processFile(path);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void processFile(final File file) {
-        final String inputPath = this.config.getInputDir().getAbsolutePath();
-        final String absolutePath = file.getAbsolutePath();
-        final String relativePath = absolutePath.substring(inputPath.length());
-        final File newLocation = new File(this.config.getOutputDir().getAbsolutePath() + relativePath);
-        newLocation.getParentFile().mkdirs();
-        logger.debug("copy file {} to {}", file.getAbsolutePath(), newLocation.getAbsoluteFile());
+    private void processFile(final Path path) {
+        final Path inputPath = this.config.getInputDir().toPath();
+        final Path relativePath = inputPath.relativize(path);
+        final Path newLocation = new File(this.config.getOutputDir(), relativePath.toString()).toPath();
+        newLocation.toFile().getParentFile().mkdirs();
+        logger.debug("copy file {} to {}", path, newLocation);
         try {
-            Files.copy(file.toPath(), new FileOutputStream(newLocation));
-            if (newLocation.getAbsolutePath().endsWith(".ttl")) {
+            FileUtils.copyFile(path.toFile(), newLocation.toFile());
+            if (newLocation.toString().endsWith(".ttl")) {
                 //parse the file
                 final Model model = ModelFactory.createDefaultModel();
-                try (final FileInputStream is = new FileInputStream(newLocation)) {
+                try (final FileInputStream is = new FileInputStream(newLocation.toFile())) {
                     RDFDataMgr.read(model, is, Lang.TTL);
                 }
 
@@ -130,10 +130,12 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
                             try {
                                 //guess mimetype
                                 final String mimeType = URLConnection.guessContentTypeFromName(externalURI);
-                                final String resourceAsString = IOUtils.toString(new FileInputStream(newLocation),
-                                        "UTF-8");
-                                final String newBody = resourceAsString.replace(value, mimeType != null ? mimeType : "application/octet-stream");
-                                IOUtils.write(newBody, new FileOutputStream(newLocation), "UTF-8");
+                                final String resourceAsString = IOUtils
+                                    .toString(new FileInputStream(newLocation.toFile()),
+                                              "UTF-8");
+                                final String newBody = resourceAsString
+                                    .replace(value, mimeType != null ? mimeType : "application/octet-stream");
+                                IOUtils.write(newBody, new FileOutputStream(newLocation.toFile()), "UTF-8");
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
@@ -158,10 +160,10 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
                 String headersPrefix;
 
                 if (isBinary.get()) {
-                    headersPrefix = newLocation.getParentFile().getAbsolutePath();
+                    headersPrefix = newLocation.getParent().toAbsolutePath().toString();
                     headersPrefix += isExternal.get() ? ".external" : ".binary";
                 } else {
-                    headersPrefix = newLocation.getAbsolutePath();
+                    headersPrefix = newLocation.toAbsolutePath().toString();
                 }
 
                 logger.debug("isBinary={}", isBinary.get());

@@ -47,18 +47,12 @@ public class UpgradeManagerFactoryTest {
         assertTrue(UpgradeManagerFactory.create(config) instanceof  F5ToF6UpgradeManager);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testInvalidMigrationPath() throws Exception {
         final var config = new Config();
         config.setSourceVersion(FedoraVersion.V_6);
         config.setTargetVersion(FedoraVersion.V_5);
-        //run
-        try {
-            UpgradeManagerFactory.create(config);
-            fail("The constructor should have failed.");
-        }catch (Exception e) {
-           //do nothing - expected.
-        }
+        UpgradeManagerFactory.create(config);
     }
 
 

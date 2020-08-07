@@ -17,13 +17,10 @@
  */
 package org.fcrepo.upgrade.utils;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.IOUtils;
-import org.junit.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -31,7 +28,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.FileUtils;
+import org.junit.Test;
 
 /**
  * Tests the {@link F47ToF5UpgradeManagerTest}
@@ -67,35 +67,34 @@ public class F47ToF5UpgradeManagerTest {
         upgradeManager.start();
         //ensure all expected files exist
         final String[] expectedFiles = new String[]{"rest.ttl",
-                "rest.ttl.headers",
-                "rest/external1",
-                "rest/external1/fcr%3Ametadata.ttl",
-                "rest/container1.ttl.headers",
-                "rest/container1/testbinary.binary",
-                "rest/container1/testbinary/fcr%3Ametadata.ttl",
-                "rest/container1/testbinary.binary.headers",
-                "rest/container1.ttl",
-                "rest/external1.external.headers",
-                "rest/external1.external"};
+                                                    "rest.ttl.headers",
+                                                    "rest/external1",
+                                                    "rest/external1/fcr%3Ametadata.ttl",
+                                                    "rest/container1.ttl.headers",
+                                                    "rest/container1/testbinary.binary",
+                                                    "rest/container1/testbinary/fcr%3Ametadata.ttl",
+                                                    "rest/container1/testbinary.binary.headers",
+                                                    "rest/container1.ttl",
+                                                    "rest/external1.external.headers",
+                                                    "rest/external1.external"};
 
         for (String f : expectedFiles) {
             assertTrue(f + " does not exist as expected", getFile(output, f).exists());
         }
 
         //ensure external content has been transformed properly
-        try (FileInputStream fis = new FileInputStream(getFile(output, "rest/external1/fcr%3Ametadata.ttl"))) {
-            final String externalContent = IOUtils.toString(fis, "UTF-8");
-            assertFalse("external content metadata should contain the mimetype", externalContent.contains("image/jpg"));
-            assertFalse("message/external-body should not be present in the external content metadata",
-                    externalContent.contains("message/external-body"));
 
-        }
+        final String externalContent = FileUtils
+            .readFileToString(getFile(output, "rest/external1/fcr%3Ametadata.ttl"), "UTF-8");
+        assertFalse("external content metadata should contain the mimetype", externalContent.contains("image/jpg"));
+        assertFalse("message/external-body should not be present in the external content metadata",
+                    externalContent.contains("message/external-body"));
 
         //ensure the binaries contain NonRDFSource types in their headers
         final Map<String, List<String>> bheadders =
-                deserializeHeaders(getFile(output, "rest/container1/testbinary.binary.headers"));
+            deserializeHeaders(getFile(output, "rest/container1/testbinary.binary.headers"));
         assertTrue("binary does not contain NonRDFSource type in the link headers",
-                bheadders.get("Link").stream().anyMatch(x -> x.contains("NonRDFSource")));
+                   bheadders.get("Link").stream().anyMatch(x -> x.contains("NonRDFSource")));
 
     }
 
@@ -107,7 +106,7 @@ public class F47ToF5UpgradeManagerTest {
     }
 
     private File getFile(final File output, final String subpath) {
-        return new File(output.getAbsolutePath() + "/" + subpath);
+        return new File(output.getAbsolutePath(), subpath);
     }
 
 }

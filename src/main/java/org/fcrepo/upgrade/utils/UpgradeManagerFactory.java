@@ -33,7 +33,7 @@ public class UpgradeManagerFactory {
                 config.getTargetVersion().equals(FedoraVersion.V_6)) {
             return new F5ToF6UpgradeManager(config);
         } else {
-            throw new RuntimeException(format("The migration path from %s to %s is not supported.",
+            throw new IllegalArgumentException(format("The migration path from %s to %s is not supported.",
                     config.getSourceVersion().getStringValue(), config.getTargetVersion().getStringValue()));
         }
     }
