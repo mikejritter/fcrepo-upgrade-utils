@@ -40,6 +40,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.fcrepo.client.FcrepoLink;
@@ -50,7 +51,7 @@ import org.fcrepo.client.FcrepoLink;
  */
 class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager {
 
-    private static final org.slf4j.Logger logger = getLogger(F47ToF5UpgradeManager.class);
+    private static final org.slf4j.Logger LOGGER = getLogger(F47ToF5UpgradeManager.class);
 
 
     /**
@@ -69,7 +70,7 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
     }
 
     private void processDirectory(final File dir) {
-        logger.info("Processing directory: {}", dir.getAbsolutePath());
+        LOGGER.info("Processing directory: {}", dir.getAbsolutePath());
         try (final Stream<Path> walk = Files.walk(dir.toPath())) {
             for (Path path : walk.filter(path -> Files.isRegularFile(path)).collect(Collectors.toList())) {
                 processFile(path);
@@ -84,7 +85,7 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
         final Path relativePath = inputPath.relativize(path);
         final Path newLocation = new File(this.config.getOutputDir(), relativePath.toString()).toPath();
         newLocation.toFile().getParentFile().mkdirs();
-        logger.debug("copy file {} to {}", path, newLocation);
+        LOGGER.debug("copy file {} to {}", path, newLocation);
         try {
             FileUtils.copyFile(path.toFile(), newLocation.toFile());
             if (newLocation.toString().endsWith(".ttl")) {
@@ -100,9 +101,9 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
                 final AtomicBoolean isExternal = new AtomicBoolean(false);
 
                 model.listStatements().forEachRemaining(statement -> {
-                    if (statement.getPredicate().getURI().equals(RdfConstants.RDF_TYPE)) {
-                        final String objectURI = statement.getObject().asResource().getURI();
-                        if (objectURI.equals(RdfConstants.LDP_NON_RDFSOURCE)) {
+                    if (statement.getPredicate().equals(RdfConstants.RDF_TYPE)) {
+                        final Resource object = statement.getObject().asResource();
+                        if (object.equals(RdfConstants.LDP_NON_RDFSOURCE)) {
                             isBinary.set(true);
                         }
 
@@ -111,21 +112,21 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
                         }
 
 
-                        final FcrepoLink link = FcrepoLink.fromUri(objectURI).rel("type").build();
+                        final FcrepoLink link = FcrepoLink.fromUri(object.getURI()).rel("type").build();
                         headers.get("Link").add(link.toString());
 
                     }
 
-                    if (statement.getPredicate().getURI().equals(RdfConstants.EBUCORE_HAS_MIME_TYPE)) {
+                    if (statement.getPredicate().equals(RdfConstants.EBUCORE_HAS_MIME_TYPE)) {
                         final String value = statement.getObject().toString();
                         final String valueAsLiteral = statement.getObject().asLiteral().getString();
 
-                        logger.debug("predicate valueAsLiteral={}", valueAsLiteral);
-                        logger.debug("predicate value={}", value);
+                        LOGGER.debug("predicate valueAsLiteral={}", valueAsLiteral);
+                        LOGGER.debug("predicate value={}", value);
 
                         if (value.startsWith("message/external-body")) {
                             final String externalURI = valueAsLiteral.substring(valueAsLiteral.toLowerCase().indexOf("url=\"") + 5, valueAsLiteral.length() - 1);
-                            logger.debug("externalURI={}", externalURI);
+                            LOGGER.debug("externalURI={}", externalURI);
 
                             try {
                                 //guess mimetype
@@ -166,9 +167,9 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
                     headersPrefix = newLocation.toAbsolutePath().toString();
                 }
 
-                logger.debug("isBinary={}", isBinary.get());
-                logger.debug("isExternal={}", isExternal.get());
-                logger.debug("headersPrefix={}", headersPrefix);
+                LOGGER.debug("isBinary={}", isBinary.get());
+                LOGGER.debug("isExternal={}", isExternal.get());
+                LOGGER.debug("headersPrefix={}", headersPrefix);
 
                 writeHeadersFile(headers, new File(headersPrefix + ".headers"));
 
