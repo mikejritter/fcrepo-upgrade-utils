@@ -27,7 +27,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 class F5ToF6UpgradeManager extends UpgradeManagerBase implements UpgradeManager {
 
-    private static final Logger logger = getLogger(F5ToF6UpgradeManager.class);
+    private static final Logger LOGGER = getLogger(F5ToF6UpgradeManager.class);
 
 
     /**
@@ -43,6 +43,9 @@ class F5ToF6UpgradeManager extends UpgradeManagerBase implements UpgradeManager 
      * Runs the upgrade util process
      */
     public void start() {
+        LOGGER.info("Starting upgrade: config={}", config);
+        LOGGER.info("Upgrade not yet implemented!");
+        LOGGER.info("Upgrade complete.");
 
     }
 }
