@@ -17,6 +17,8 @@
  */
 package org.fcrepo.upgrade.utils;
 
+import static org.fcrepo.upgrade.utils.HttpConstants.CONTENT_TYPE_HEADER;
+import static org.fcrepo.upgrade.utils.HttpConstants.LOCATION_HEADER;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
@@ -142,17 +144,17 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
                             }
 
 
-                            if (!headers.containsKey("Location")) {
-                                headers.put("Location", new ArrayList<String>());
+                            if (!headers.containsKey(LOCATION_HEADER)) {
+                                headers.put(LOCATION_HEADER, new ArrayList<String>());
                             }
 
                             headers.get("Location").add(externalURI);
                             isExternal.set(true);
                         } else {
-                            if (!headers.containsKey("Content-Type")) {
-                                headers.put("Content-Type", new ArrayList<String>());
+                            if (!headers.containsKey(CONTENT_TYPE_HEADER)) {
+                                headers.put(CONTENT_TYPE_HEADER, new ArrayList<String>());
                             }
-                            headers.get("Content-Type").add(value);
+                            headers.get(CONTENT_TYPE_HEADER).add(value);
                         }
                     }
                 });
