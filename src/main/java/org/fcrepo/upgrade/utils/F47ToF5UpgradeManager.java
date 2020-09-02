@@ -26,7 +26,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -34,12 +33,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -54,7 +53,7 @@ import org.fcrepo.client.FcrepoLink;
 class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager {
 
     private static final org.slf4j.Logger LOGGER = getLogger(F47ToF5UpgradeManager.class);
-
+    private static final Pattern MESSAGE_EXTERNAL_BODY_URL_PATTERN = Pattern.compile("^.*url=\"(.*)\".*$");
 
     /**
      * Constructor
@@ -102,7 +101,8 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
                 final AtomicBoolean isBinary = new AtomicBoolean(false);
                 final AtomicBoolean isExternal = new AtomicBoolean(false);
 
-                model.listStatements().forEachRemaining(statement -> {
+                // toList here because we may need to modify the model mid-iteration
+                model.listStatements().toList().forEach(statement -> {
                     if (statement.getPredicate().equals(RdfConstants.RDF_TYPE)) {
                         final Resource object = statement.getObject().asResource();
                         if (object.equals(RdfConstants.LDP_NON_RDFSOURCE)) {
@@ -120,36 +120,31 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
                     }
 
                     if (statement.getPredicate().equals(RdfConstants.EBUCORE_HAS_MIME_TYPE)) {
-                        final String value = statement.getObject().toString();
-                        final String valueAsLiteral = statement.getObject().asLiteral().getString();
-
-                        LOGGER.debug("predicate valueAsLiteral={}", valueAsLiteral);
+                        final String value = statement.getObject().asLiteral().getString();
                         LOGGER.debug("predicate value={}", value);
-
                         if (value.startsWith("message/external-body")) {
-                            final String externalURI = valueAsLiteral.substring(valueAsLiteral.toLowerCase().indexOf("url=\"") + 5, valueAsLiteral.length() - 1);
-                            LOGGER.debug("externalURI={}", externalURI);
+                            final var matcher = MESSAGE_EXTERNAL_BODY_URL_PATTERN.matcher(value);
+                            String externalURI = null;
+                            if(matcher.find()) {
+                                externalURI = matcher.group(1);
+                            }
 
+                            LOGGER.debug("externalURI={}", externalURI);
                             try {
-                                //guess mimetype
-                                final String mimeType = URLConnection.guessContentTypeFromName(externalURI);
-                                final String resourceAsString = IOUtils
-                                    .toString(new FileInputStream(newLocation.toFile()),
-                                              "UTF-8");
-                                final String newBody = resourceAsString
-                                    .replace(value, mimeType != null ? mimeType : "application/octet-stream");
-                                IOUtils.write(newBody, new FileOutputStream(newLocation.toFile()), "UTF-8");
+                                model.remove(statement);
+                                RDFDataMgr.write(new FileOutputStream(newLocation.toFile()), model, Lang.TTL);
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
-
 
                             if (!headers.containsKey(LOCATION_HEADER)) {
                                 headers.put(LOCATION_HEADER, new ArrayList<String>());
                             }
 
-                            headers.get("Location").add(externalURI);
-                            isExternal.set(true);
+                            if (externalURI != null) {
+                                headers.get(LOCATION_HEADER).add(externalURI);
+                                isExternal.set(true);
+                            }
                         } else {
                             if (!headers.containsKey(CONTENT_TYPE_HEADER)) {
                                 headers.put(CONTENT_TYPE_HEADER, new ArrayList<String>());
