@@ -26,15 +26,16 @@ import static java.lang.String.format;
 public class UpgradeManagerFactory {
 
     public static UpgradeManager create(final Config config) {
-        if(config.getSourceVersion().equals(FedoraVersion.V_4_7_5) &&
-                config.getTargetVersion().equals(FedoraVersion.V_5)) {
+        if (config.getSourceVersion().equals(FedoraVersion.V_4_7_5) &&
+            config.getTargetVersion().equals(FedoraVersion.V_5)) {
             return new F47ToF5UpgradeManager(config);
-        } else if(config.getSourceVersion().equals(FedoraVersion.V_5) &&
-                config.getTargetVersion().equals(FedoraVersion.V_6)) {
+        } else if (config.getSourceVersion().equals(FedoraVersion.V_5) &&
+                   config.getTargetVersion().equals(FedoraVersion.V_6)) {
             return new F5ToF6UpgradeManager(config);
         } else {
             throw new IllegalArgumentException(format("The migration path from %s to %s is not supported.",
-                    config.getSourceVersion().getStringValue(), config.getTargetVersion().getStringValue()));
+                                                      config.getSourceVersion().getStringValue(),
+                                                      config.getTargetVersion().getStringValue()));
         }
     }
 }

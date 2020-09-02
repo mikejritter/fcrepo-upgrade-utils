@@ -31,7 +31,9 @@ import java.util.Map;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * Tests the {@link F47ToF5UpgradeManagerTest}
@@ -43,16 +45,13 @@ public class F47ToF5UpgradeManagerTest {
 
     static final String TARGET_DIR = System.getProperty("project.build.directory");
 
-    private File createTempDir() {
-        final File tmpDir = new File(System.getProperty("java.io.tmpdir"), System.currentTimeMillis() + "");
-        tmpDir.mkdirs();
-        return tmpDir;
-    }
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     @Test
     public void testUpgrade() throws Exception {
         //prepare
-        final File tmpDir = createTempDir();
+        final File tmpDir = tempFolder.newFolder();
         final File input = new File(TARGET_DIR + "/test-classes/4.7.5-export");
         final File output = new File(tmpDir, "output");
         output.mkdir();
@@ -79,20 +78,20 @@ public class F47ToF5UpgradeManagerTest {
                                                     "rest/external1.external"};
 
         for (String f : expectedFiles) {
-            assertTrue(f + " does not exist as expected", getFile(output, f).exists());
+            assertTrue(f + " does not exist as expected", new File(output, f).exists());
         }
 
         //ensure external content has been transformed properly
 
         final String externalContent = FileUtils
-            .readFileToString(getFile(output, "rest/external1/fcr%3Ametadata.ttl"), "UTF-8");
+            .readFileToString(new File(output, "rest/external1/fcr%3Ametadata.ttl"), "UTF-8");
         assertFalse("external content metadata should contain the mimetype", externalContent.contains("image/jpg"));
         assertFalse("message/external-body should not be present in the external content metadata",
                     externalContent.contains("message/external-body"));
 
         //ensure the binaries contain NonRDFSource types in their headers
         final Map<String, List<String>> bheadders =
-            deserializeHeaders(getFile(output, "rest/container1/testbinary.binary.headers"));
+            deserializeHeaders(new File(output, "rest/container1/testbinary.binary.headers"));
         assertTrue("binary does not contain NonRDFSource type in the link headers",
                    bheadders.get("Link").stream().anyMatch(x -> x.contains("NonRDFSource")));
 
@@ -103,10 +102,6 @@ public class F47ToF5UpgradeManagerTest {
         final ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.readValue(mapData, new TypeReference<HashMap<String, List<String>>>() {
         });
-    }
-
-    private File getFile(final File output, final String subpath) {
-        return new File(output.getAbsolutePath(), subpath);
     }
 
 }

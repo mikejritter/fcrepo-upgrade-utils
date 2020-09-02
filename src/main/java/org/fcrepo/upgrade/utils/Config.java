@@ -34,7 +34,7 @@ public class Config {
     /**
      * Set the version of the source to be transformed.
      *
-     * @param sourceVersion
+     * @param sourceVersion The source version
      */
     public void setSourceVersion(FedoraVersion sourceVersion) {
         this.sourceVersion = sourceVersion;
@@ -43,7 +43,7 @@ public class Config {
     /**
      * The version of the source to be transformed.
      *
-     * @return
+     * @return The source version
      */
     public FedoraVersion getSourceVersion() {
         return sourceVersion;
@@ -52,7 +52,7 @@ public class Config {
     /**
      * The version of Fedora into which you are transforming the source.
      *
-     * @return
+     * @return The target version
      */
     public FedoraVersion getTargetVersion() {
         return targetVersion;
@@ -61,7 +61,7 @@ public class Config {
     /**
      * Set the version of Fedora into which you are transforming the source.
      *
-     * @param targetVersion
+     * @param targetVersion The target version
      */
     public void setTargetVersion(FedoraVersion targetVersion) {
         this.targetVersion = targetVersion;

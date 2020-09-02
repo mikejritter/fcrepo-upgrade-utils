@@ -17,17 +17,25 @@
  */
 package org.fcrepo.upgrade.utils;
 
-import org.apache.commons.cli.*;
+import static java.lang.String.format;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
-import static org.slf4j.LoggerFactory.getLogger;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 /**
  * @author dbernstein
@@ -71,26 +79,36 @@ public class UpgradeUtilDriver {
         final Options configOptions = new org.apache.commons.cli.Options();
 
         configOptions.addOption(Option.builder("h")
-                .longOpt("help")
-                .hasArg(false)
-                .desc("Print these options")
-                .required(false)
-                .build());
+                                      .longOpt("help")
+                                      .hasArg(false)
+                                      .desc("Print these options")
+                                      .required(false)
+                                      .build());
 
         configOptions.addOption(Option.builder("i")
-                .longOpt("input-dir")
-                .hasArg(true)
-                .desc("The path to the directory containing a Fedora 4.7.x or Fedora 5.x export")
-                .required(true)
-                .build());
+                                      .longOpt("input-dir")
+                                      .hasArg(true)
+                                      .desc("The path to the directory containing a Fedora 4.7.x or Fedora 5.x export")
+                                      .required(true)
+                                      .build());
+
+        configOptions.addOption(Option.builder("o")
+                                      .longOpt("output-dir")
+                                      .hasArg(true)
+                                      .desc("The path to the directory where upgraded resources will be written. " +
+                                            "Default value: output_<yyyyMMdd-HHmmss>. " +
+                                            "For example: output_20200101-075901")
+                                      .required(false)
+                                      .build());
 
         configOptions.addOption(Option.builder("s")
-                .longOpt("source-version")
-                .hasArg(true)
-                .desc(format("The version of Fedora that was the source of the export. Valid values: %s",
-                        join(VALID_MIGRATION_PATHS.keySet())))
-                .required(true)
-                .build());
+                                      .longOpt("source-version")
+                                      .hasArg(true)
+                                      .desc(format(
+                                          "The version of Fedora that was the source of the export. Valid values: %s",
+                                          join(VALID_MIGRATION_PATHS.keySet())))
+                                      .required(true)
+                                      .build());
 
         configOptions.addOption(Option.builder("t")
                 .longOpt("target-version")
@@ -122,7 +140,10 @@ public class UpgradeUtilDriver {
         final File outputDir;
 
         if (outputDirStr == null) {
-            outputDir = new File("output");
+            final var date = Calendar.getInstance().getTime();
+            final var dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
+            final var strCurrentTime = dateFormat.format(date);
+            outputDir = new File("output_" + strCurrentTime);
             outputDir.mkdirs();
         } else {
             outputDir = new File(outputDirStr);
@@ -148,15 +169,13 @@ public class UpgradeUtilDriver {
     }
 
     private Object join(Collection<FedoraVersion> versions) {
-        return String.join(", ", versions.stream().map(x -> x.getStringValue()).collect(Collectors.toList()));
+        return versions.stream().map(x -> x.getStringValue()).collect(Collectors.joining(","));
     }
-
 
     private static void printHelpAndExit(final String errorMessage, final Options options) {
         final HelpFormatter formatter = new HelpFormatter();
         System.err.println(errorMessage);
         formatter.printHelp("fcepo-upgrade-util", options);
         System.exit(1);
-
     }
 }

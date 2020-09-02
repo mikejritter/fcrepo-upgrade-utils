@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -137,12 +138,8 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
                                 throw new RuntimeException(e);
                             }
 
-                            if (!headers.containsKey(LOCATION_HEADER)) {
-                                headers.put(LOCATION_HEADER, new ArrayList<String>());
-                            }
-
                             if (externalURI != null) {
-                                headers.get(LOCATION_HEADER).add(externalURI);
+                                headers.put(LOCATION_HEADER, Collections.singletonList(externalURI));
                                 isExternal.set(true);
                             }
                         } else {

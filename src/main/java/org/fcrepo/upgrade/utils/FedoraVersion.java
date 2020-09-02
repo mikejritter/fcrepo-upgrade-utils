@@ -48,9 +48,8 @@ public enum FedoraVersion {
 
         throw new IllegalArgumentException(
                 String.format("%s is not a valid version. Please try one of the following: %s",
-                        strValue, String.join(",", Arrays.asList(FedoraVersion.values())
-                                .stream().map(x -> x.getStringValue())
-                                .collect(Collectors.toList()))));
+                        strValue, Arrays.stream(FedoraVersion.values()).map(x -> x.getStringValue())
+                                .collect(Collectors.joining(","))));
     }
 
 }
