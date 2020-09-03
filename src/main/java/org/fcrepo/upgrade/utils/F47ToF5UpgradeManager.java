@@ -90,7 +90,7 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
         LOGGER.debug("copy file {} to {}", path, newLocation);
         try {
             FileUtils.copyFile(path.toFile(), newLocation.toFile());
-            if (newLocation.toString().endsWith(".ttl")) {
+            if (newLocation.endsWith(".ttl")) {
                 //parse the file
                 final Model model = ModelFactory.createDefaultModel();
                 try (final FileInputStream is = new FileInputStream(newLocation.toFile())) {
