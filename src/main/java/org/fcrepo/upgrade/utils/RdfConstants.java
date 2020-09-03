@@ -22,10 +22,16 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 
 /**
+ * RDF-related constants
+ *
  * @author dbernstein
  */
 public class RdfConstants {
-    public static final Property RDF_TYPE = ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
-    public static final Resource LDP_NON_RDFSOURCE = ResourceFactory.createResource("http://www.w3.org/ns/ldp#NonRDFSource");
-    public static final Property EBUCORE_HAS_MIME_TYPE = ResourceFactory.createProperty("http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#hasMimeType");
+    private RdfConstants() {
+    }
+
+    public static final Resource LDP_NON_RDFSOURCE =
+        ResourceFactory.createResource("http://www.w3.org/ns/ldp#NonRDFSource");
+    public static final Property EBUCORE_HAS_MIME_TYPE =
+        ResourceFactory.createProperty("http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#hasMimeType");
 }

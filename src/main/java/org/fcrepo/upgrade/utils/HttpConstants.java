@@ -17,14 +17,16 @@
  */
 package org.fcrepo.upgrade.utils;
 
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
-
 /**
+ * HTTP related constants
+ *
  * @author dbernstein
  */
 public class HttpConstants {
+
+    private HttpConstants() {
+    }
+
     public static final String CONTENT_TYPE_HEADER = "Content-Type";
     public static final String LOCATION_HEADER = "Location";
 }

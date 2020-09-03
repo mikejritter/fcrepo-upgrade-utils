@@ -17,9 +17,9 @@
  */
 package org.fcrepo.upgrade.utils;
 
-import org.junit.Test;
+import static org.junit.Assert.assertTrue;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 /**
  * Tests the {@link UpgradeManagerFactory}

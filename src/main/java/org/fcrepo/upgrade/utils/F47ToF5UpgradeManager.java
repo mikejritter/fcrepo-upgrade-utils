@@ -45,6 +45,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoLink;
 
 /**
@@ -54,7 +55,8 @@ import org.fcrepo.client.FcrepoLink;
 class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager {
 
     private static final org.slf4j.Logger LOGGER = getLogger(F47ToF5UpgradeManager.class);
-    private static final Pattern MESSAGE_EXTERNAL_BODY_URL_PATTERN = Pattern.compile("^.*url=\"(.*)\".*$");
+    private static final Pattern MESSAGE_EXTERNAL_BODY_URL_PATTERN = Pattern
+        .compile("^.*url=\"(.*)\".*$", Pattern.CASE_INSENSITIVE);
 
     /**
      * Constructor
@@ -74,9 +76,7 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
     private void processDirectory(final File dir) {
         LOGGER.info("Processing directory: {}", dir.getAbsolutePath());
         try (final Stream<Path> walk = Files.walk(dir.toPath())) {
-            for (Path path : walk.filter(path -> Files.isRegularFile(path)).collect(Collectors.toList())) {
-                processFile(path);
-            }
+            walk.filter(Files::isRegularFile).forEach(this::processFile);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -86,11 +86,12 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
         final Path inputPath = this.config.getInputDir().toPath();
         final Path relativePath = inputPath.relativize(path);
         final Path newLocation = this.config.getOutputDir().toPath().resolve(relativePath);
-        Files.createDirectories(newLocation.getParent())
-        LOGGER.debug("copy file {} to {}", path, newLocation);
+
         try {
+            Files.createDirectories(newLocation.getParent());
+            LOGGER.debug("copy file {} to {}", path, newLocation);
             FileUtils.copyFile(path.toFile(), newLocation.toFile());
-            if (newLocation.endsWith(".ttl")) {
+            if (newLocation.toString().endsWith(".ttl")) {
                 //parse the file
                 final Model model = ModelFactory.createDefaultModel();
                 try (final FileInputStream is = new FileInputStream(newLocation.toFile())) {
@@ -104,7 +105,7 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
 
                 // toList here because we may need to modify the model mid-iteration
                 model.listStatements().toList().forEach(statement -> {
-                    if (statement.getPredicate().equals(RdfConstants.RDF_TYPE)) {
+                    if (statement.getPredicate().equals(RDF.type)) {
                         final Resource object = statement.getObject().asResource();
                         if (object.equals(RdfConstants.LDP_NON_RDFSOURCE)) {
                             isBinary.set(true);
@@ -121,12 +122,12 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
                     }
 
                     if (statement.getPredicate().equals(RdfConstants.EBUCORE_HAS_MIME_TYPE)) {
-                        final String value = statement.getObject().asLiteral().getString();
+                        final String value = statement.getString();
                         LOGGER.debug("predicate value={}", value);
                         if (value.startsWith("message/external-body")) {
                             final var matcher = MESSAGE_EXTERNAL_BODY_URL_PATTERN.matcher(value);
                             String externalURI = null;
-                            if(matcher.find()) {
+                            if(matcher.matches()) {
                                 externalURI = matcher.group(1);
                             }
 
