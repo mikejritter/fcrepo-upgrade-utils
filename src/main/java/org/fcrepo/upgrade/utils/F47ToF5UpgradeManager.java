@@ -85,7 +85,7 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
     private void processFile(final Path path) {
         final Path inputPath = this.config.getInputDir().toPath();
         final Path relativePath = inputPath.relativize(path);
-        final Path newLocation = new File(this.config.getOutputDir(), relativePath.toString()).toPath();
+        final Path newLocation = this.config.getOutputDir().toPath().resolve(relativePath);
         newLocation.toFile().getParentFile().mkdirs();
         LOGGER.debug("copy file {} to {}", path, newLocation);
         try {
