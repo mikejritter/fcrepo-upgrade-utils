@@ -19,6 +19,7 @@ package org.fcrepo.upgrade.utils;
 
 import static org.fcrepo.upgrade.utils.HttpConstants.CONTENT_TYPE_HEADER;
 import static org.fcrepo.upgrade.utils.HttpConstants.LOCATION_HEADER;
+import static org.fcrepo.upgrade.utils.RdfConstants.EBUCORE_HAS_MIME_TYPE;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
@@ -39,6 +40,7 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -120,7 +122,7 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
 
                     }
 
-                    if (statement.getPredicate().equals(RdfConstants.EBUCORE_HAS_MIME_TYPE)) {
+                    if (statement.getPredicate().equals(EBUCORE_HAS_MIME_TYPE)) {
                         final String value = statement.getString();
                         LOGGER.debug("predicate value={}", value);
                         if (value.startsWith("message/external-body")) {
@@ -133,6 +135,7 @@ class F47ToF5UpgradeManager extends UpgradeManagerBase implements UpgradeManager
                             LOGGER.debug("externalURI={}", externalURI);
                             try {
                                 model.remove(statement);
+                                model.add(statement.getSubject(), statement.getPredicate(), "application/octet-stream");
                                 RDFDataMgr.write(new FileOutputStream(newLocation.toFile()), model, Lang.TTL);
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
