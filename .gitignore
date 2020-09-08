@@ -4,3 +4,7 @@ fcrepo4-data/
 *~
 *.iml
 .idea
+output_*
+.classpath
+.settings
+.project
