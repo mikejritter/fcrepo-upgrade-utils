@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
+  <groupId>org.fcrepo</groupId>
+  <version>6.0.0-SNAPSHOT</version>
 
   <parent>
     <groupId>org.fcrepo</groupId>
-    <artifactId>fcrepo</artifactId>
-    <version>4.3.1-SNAPSHOT</version>
+    <artifactId>fcrepo-parent</artifactId>
+    <version>6.0.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>fcrepo-upgrade-utils</artifactId>
   <name>Fedora Repository Utilities</name>
-  <description>The Fedora Commons repository upgrade utilities: Provides tools for maintaining the Fedora Commons repository.</description>
+  <description>The Fedora Commons repository upgrade utilities: Provides tools for maintaining the Fedora Commons
+    repository.
+  </description>
   <packaging>jar</packaging>
 
   <repositories>
@@ -28,91 +33,99 @@
   </repositories>
 
   <properties>
-    <project_name>fcrepo4-upgrade-utils</project_name>
+    <project_name>fcrepo-upgrade-utils</project_name>
     <project_organization>fcrepo4-exts</project_organization>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <project.copyrightYear>2015</project.copyrightYear>
-    <hk2.version>2.3.0</hk2.version>
-    <logback.version>1.1.2</logback.version>
-    <mockito.version>1.10.8</mockito.version>
+    <project.copyrightYear>2019</project.copyrightYear>
+    <logback.version>1.2.3</logback.version>
+    <mockito.version>2.28.2</mockito.version>
     <github.global.server>github</github.global.server>
-    <guava.version>18.0</guava.version>
-    <slf4j.version>1.7.7</slf4j.version>
-    <checkstyle.plugin.version>2.14</checkstyle.plugin.version>
-    <spring.version>4.1.1.RELEASE</spring.version>
-    <fcrepo.test.context.path />
+    <slf4j.version>1.7.26</slf4j.version>
+    <checkstyle.plugin.version>2.17</checkstyle.plugin.version>
+    <commons-cli.version>1.3</commons-cli.version>
+    <jackson.version>2.9.9</jackson.version>
+    <jena.version>3.1.1</jena.version>
+    <junit.version>4.11</junit.version>
+    <cargo.version>1.4.12</cargo.version>
+    <fcrepo-java-client.version>0.4.0</fcrepo-java-client.version>
+    <commons-lang.version>3.11</commons-lang.version>
+    <commons-collections.version>4.4</commons-collections.version>
+
   </properties>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.fcrepo</groupId>
-        <artifactId>fcrepo-jcr-bom</artifactId>
-        <version>${project.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
 
   <dependencies>
     <dependency>
-      <groupId>org.fcrepo</groupId>
-      <artifactId>fcrepo-kernel-api</artifactId>
-      <version>${project.version}</version>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons-lang.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.fcrepo</groupId>
-      <artifactId>fcrepo-kernel-modeshape</artifactId>
-      <version>${project.version}</version>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>${commons-collections.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.fcrepo</groupId>
-      <artifactId>fcrepo-auth-common</artifactId>
-      <version>${project.version}</version>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
     </dependency>
-    <dependency>
-      <groupId>javax.jcr</groupId>
-      <artifactId>jcr</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>${guava.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.modeshape</groupId>
-      <artifactId>modeshape-jcr</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-cachestore-leveldb</artifactId>
-    </dependency>
+
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
+      <version>${logback.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-arq</artifactId>
+      <version>${jena.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-cli</groupId>
+      <artifactId>commons-cli</artifactId>
+      <version>${commons-cli.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.fcrepo.client</groupId>
+      <artifactId>fcrepo-java-client</artifactId>
+      <version>${fcrepo-java-client.version}</version>
+    </dependency>
+    <!-- testing -->
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-test</artifactId>
-      <version>${spring.version}</version>
+      <scope>test</scope>
+      <version>${junit.version}</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>${mockito.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -121,32 +134,12 @@
       <resource>
         <directory>src/main/resources</directory>
       </resource>
-      <resource>
-        <directory>${project.build.directory}/maven-shared-archive-resources</directory>
-      </resource>
     </resources>
     <plugins>
       <plugin>
-        <artifactId>maven-remote-resources-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>process-remote-resources</id>
-            <phase>generate-resources</phase>
-            <goals>
-              <goal>process</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <resourceBundles>
-            <resourceBundle>org.fcrepo:fcrepo-configs:${project.version}</resourceBundle>
-          </resourceBundles>
-        </configuration>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>2.4</version>
+        <version>3.2.1</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -155,32 +148,82 @@
             </goals>
             <configuration>
               <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>org.fcrepo.upgrade.utils.TechnicalMetadataMigrator</mainClass>
+                <transformer
+                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>org.fcrepo.upgrade.utils.UpgradeUtilDriver</mainClass>
                 </transformer>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                <transformer
+                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/spring.handlers</resource>
                 </transformer>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                <transformer
+                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/spring.schemas</resource>
                 </transformer>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                <transformer
+                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
               </transformers>
             </configuration>
           </execution>
         </executions>
       </plugin>
+
+
+      <!--plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+	<version>${checkstyle.plugin.version}</version>
+      </plugin-->
+
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+
+      <!-- verify that source files contain the correct license headers $
+        mvn license:check to check files $ mvn license:format to update files -->
+      <plugin>
+        <groupId>com.mycila</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <project.build.directory>${project.build.directory}</project.build.directory>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>com.github.github</groupId>
+        <artifactId>site-maven-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+      </plugin>
+
     </plugins>
   </build>
 
   <issueManagement>
     <system>GitHub</system>
-    <url>https://github.com/fcrepo4-exts/fcrepo4-upgrade-utils/issues</url>
+    <url>https://github.com/fcrepo4-exts/fcrepo-upgrade-utils/issues</url>
   </issueManagement>
-
-  <ciManagement>
-    <system>Jenkins</system>
-    <url>http://jenkins.fcrepo.org/job/fcrepo4-upgrade-utils</url>
-  </ciManagement>
-
 </project>
