@@ -22,6 +22,7 @@ package org.fcrepo.upgrade.utils;
  * @author dbernstein
  */
 public abstract class UpgradeManagerBase implements UpgradeManager {
+
     protected final Config config;
 
     protected UpgradeManagerBase(final Config config) {

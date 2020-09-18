@@ -17,7 +17,11 @@
  */
 package org.fcrepo.upgrade.utils;
 
+import com.google.common.base.Preconditions;
+import org.apache.jena.riot.Lang;
+
 import java.io.File;
+import java.util.Objects;
 
 /**
  * A class representing the configuration of the upgrade run.
@@ -26,17 +30,32 @@ import java.io.File;
  */
 public class Config {
 
+    public static final String DEFAULT_USER = "fedoraAdmin";
+    public static final String DEFAULT_USER_ADDRESS = "info:fedora/fedoraAdmin";
+    public static final String DEFAULT_DIGEST_ALGORITHM = "sha512";
+    public static final Lang DEFAULT_SRC_RDF_LANG = Lang.TTL;
+    public static final int DEFAULT_THREADS = Runtime.getRuntime().availableProcessors();
+
     private FedoraVersion sourceVersion;
     private FedoraVersion targetVersion;
     private File inputDir;
     private File outputDir;
+
+    // F4/5 -> F6 Options
+    private Lang srcRdfLang = DEFAULT_SRC_RDF_LANG;
+    private String baseUri;
+    private Integer threads = DEFAULT_THREADS;
+    private String digestAlgorithm = DEFAULT_DIGEST_ALGORITHM;
+    private String fedoraUser = DEFAULT_USER;
+    private String fedoraUserAddress = DEFAULT_USER_ADDRESS;
+    private boolean forceWindowsMode = false;
 
     /**
      * Set the version of the source to be transformed.
      *
      * @param sourceVersion The source version
      */
-    public void setSourceVersion(FedoraVersion sourceVersion) {
+    public void setSourceVersion(final FedoraVersion sourceVersion) {
         this.sourceVersion = sourceVersion;
     }
 
@@ -63,7 +82,7 @@ public class Config {
      *
      * @param targetVersion The target version
      */
-    public void setTargetVersion(FedoraVersion targetVersion) {
+    public void setTargetVersion(final FedoraVersion targetVersion) {
         this.targetVersion = targetVersion;
     }
 
@@ -79,7 +98,7 @@ public class Config {
      * Set the output directory
      * @param outputDir a directory
      */
-    public void setOutputDir(File outputDir) {
+    public void setOutputDir(final File outputDir) {
         this.outputDir = outputDir;
     }
 
@@ -95,8 +114,153 @@ public class Config {
      * Set the input directory
      * @param inputDir a directory
      */
-    public void setInputDir(File inputDir) {
+    public void setInputDir(final File inputDir) {
         this.inputDir = inputDir;
+    }
+
+    /**
+     * @return the base uri of the existing Fedora, eg http://localhost:8080/rest
+     */
+    public String getBaseUri() {
+        return baseUri;
+    }
+
+    /**
+     * Sets the baseUri
+     * @param baseUri the base uri of the existing Fedora, eg http://localhost:8080/rest
+     */
+    public void setBaseUri(final String baseUri) {
+        this.baseUri = Objects.requireNonNull(baseUri, "baseUri must be specified");
+    }
+
+    /**
+     * @return the number of threads to use
+     */
+    public Integer getThreads() {
+        return threads;
+    }
+
+    /**
+     * Sets the number of threads to use
+     * @param threads number of threads
+     */
+    public void setThreads(final Integer threads) {
+        if (threads == null) {
+            this.threads = DEFAULT_THREADS;
+        } else {
+            Preconditions.checkArgument(threads > 0, "threads must be > 0");
+            this.threads = threads;
+        }
+    }
+
+    /**
+     * @return the digest algorithm to use in OCFL, sha512 or sha256
+     */
+    public String getDigestAlgorithm() {
+        return digestAlgorithm;
+    }
+
+    /**
+     * Sets the digest algorithm
+     * @param digestAlgorithm sha512 or sha256
+     */
+    public void setDigestAlgorithm(final String digestAlgorithm) {
+        if (digestAlgorithm == null) {
+            this.digestAlgorithm = DEFAULT_DIGEST_ALGORITHM;
+        } else {
+            this.digestAlgorithm = digestAlgorithm;
+        }
+    }
+
+    /**
+     * @return the user to attribute OCFL versions to
+     */
+    public String getFedoraUser() {
+        return fedoraUser;
+    }
+
+    /**
+     * Sets the user to attribute OCFL versions to
+     * @param fedoraUser user name
+     */
+    public void setFedoraUser(final String fedoraUser) {
+        if (fedoraUser == null) {
+            this.fedoraUser = DEFAULT_USER;
+        } else {
+            this.fedoraUser = fedoraUser;
+        }
+    }
+
+    /**
+     * @return the address of the user OCFL versions are attributed to
+     */
+    public String getFedoraUserAddress() {
+        return fedoraUserAddress;
+    }
+
+    /**
+     * Sets the address of the user OCFL versions are attributed to
+     * @param fedoraUserAddress the address of the user OCFL versions are attributed to
+     */
+    public void setFedoraUserAddress(final String fedoraUserAddress) {
+        if (fedoraUserAddress == null) {
+            this.fedoraUserAddress = DEFAULT_USER_ADDRESS;
+        } else {
+            this.fedoraUserAddress = fedoraUserAddress;
+        }
+    }
+
+    /**
+     * @return the rdf lang of the export
+     */
+    public Lang getSrcRdfLang() {
+        return srcRdfLang;
+    }
+
+    /**
+     * Sets the rdf lang of the export
+     * @param srcRdfLang the rdf lang of the export
+     */
+    public void setSrcRdfLang(final Lang srcRdfLang) {
+        if (srcRdfLang == null) {
+            this.srcRdfLang = DEFAULT_SRC_RDF_LANG;
+        } else {
+            this.srcRdfLang = srcRdfLang;
+        }
+    }
+
+    /**
+     * This is just used for testing
+     *
+     * @return indicates whether or not OCFL should be forced into Windows mode
+     */
+    public boolean isForceWindowsMode() {
+        return forceWindowsMode;
+    }
+
+    /**
+     * This is just used for testing
+     *
+     * @param forceWindowsMode true if OCFL should be forced into Windows mode
+     */
+    public void setForceWindowsMode(final boolean forceWindowsMode) {
+        this.forceWindowsMode = forceWindowsMode;
+    }
+
+    @Override
+    public String toString() {
+        return "Config{" +
+                "sourceVersion=" + sourceVersion +
+                ", targetVersion=" + targetVersion +
+                ", inputDir=" + inputDir +
+                ", outputDir=" + outputDir +
+                ", srcRdfLang=" + srcRdfLang +
+                ", baseUri='" + baseUri + '\'' +
+                ", threads=" + threads +
+                ", digestAlgorithm='" + digestAlgorithm + '\'' +
+                ", fedoraUser='" + fedoraUser + '\'' +
+                ", fedoraUserAddress='" + fedoraUserAddress + '\'' +
+                '}';
     }
 
 }

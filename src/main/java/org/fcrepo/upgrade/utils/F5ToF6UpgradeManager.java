@@ -17,6 +17,8 @@
  */
 package org.fcrepo.upgrade.utils;
 
+import org.fcrepo.upgrade.utils.f6.MigrationTaskManager;
+import org.fcrepo.upgrade.utils.f6.ResourceInfo;
 import org.slf4j.Logger;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -25,18 +27,22 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @author dbernstein
  * @since 2020-08-05
  */
-class F5ToF6UpgradeManager extends UpgradeManagerBase implements UpgradeManager {
+class F5ToF6UpgradeManager implements UpgradeManager {
 
     private static final Logger LOGGER = getLogger(F5ToF6UpgradeManager.class);
 
+    private static final String ROOT = "info:fedora";
+
+    private final Config config;
+    private final MigrationTaskManager migrationTaskManager;
 
     /**
      * Constructor
-     *
-     * @param config the upgrade configuration
      */
-    public F5ToF6UpgradeManager(final Config config) {
-        super(config);
+    public F5ToF6UpgradeManager(final Config config,
+                                final MigrationTaskManager migrationTaskManager) {
+        this.config = config;
+        this.migrationTaskManager = migrationTaskManager;
     }
 
     /**
@@ -44,8 +50,19 @@ class F5ToF6UpgradeManager extends UpgradeManagerBase implements UpgradeManager 
      */
     public void start() {
         LOGGER.info("Starting upgrade: config={}", config);
-        LOGGER.info("Upgrade not yet implemented!");
-        LOGGER.info("Upgrade complete.");
 
+        final var root = config.getInputDir().toPath();
+        final var repoRoot = ResourceInfo.container(ROOT, ROOT, root, "rest");
+        migrationTaskManager.submit(repoRoot);
+
+        try {
+            migrationTaskManager.awaitCompletion();
+            LOGGER.info("Upgrade complete.");
+            migrationTaskManager.shutdown();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        }
     }
+
 }
