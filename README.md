@@ -1,7 +1,7 @@
-Fedora Utilities
+fcrepo-upgrade-utils [![Build Status](https://travis-ci.com/fcrepo-exts/fcrepo-upgrade-utils.svg?branch=master)](https://travis-ci.com/fcrepo-exts/fcrepo-upgrade-utils)
 ==================
 
-Utilities for maintaining the [Fedora Commons repository](http://github.com/fcrepo/fcrepo).
+Utility for upgrading the [Fedora Commons repository](http://github.com/fcrepo/fcrepo).
 
 Building
 --------
