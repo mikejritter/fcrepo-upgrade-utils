@@ -27,6 +27,7 @@ import org.fcrepo.storage.ocfl.InteractionModel;
 import org.fcrepo.storage.ocfl.OcflObjectSession;
 import org.fcrepo.storage.ocfl.OcflObjectSessionFactory;
 import org.fcrepo.storage.ocfl.ResourceHeaders;
+import org.fcrepo.storage.ocfl.ResourceHeadersVersion;
 import org.fcrepo.upgrade.utils.Config;
 import org.fcrepo.upgrade.utils.RdfConstants;
 import org.slf4j.Logger;
@@ -44,7 +45,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -447,6 +447,7 @@ public class ResourceMigrator {
         final var lastModified = RdfUtil.getDateValue(RdfConstants.FEDORA_LAST_MODIFIED_DATE, rdf);
 
         headers.withId(fullId)
+                .withHeadersVersion(ResourceHeadersVersion.V1_0)
                 .withParent(parentId)
                 .withInteractionModel(interactionModel.getUri())
                 .withArchivalGroup(false)
@@ -455,6 +456,7 @@ public class ResourceMigrator {
                 .withCreatedDate(created)
                 .withLastModifiedBy(RdfUtil.getFirstValue(RdfConstants.FEDORA_LAST_MODIFIED_BY, rdf))
                 .withLastModifiedDate(lastModified)
+                .withMementoCreatedDate(lastModified)
                 .withStateToken(calculateStateToken(lastModified));
 
         if (created == null) {
